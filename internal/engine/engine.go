@@ -49,6 +49,13 @@ func (e *Engine) Scan(ctx context.Context, req model.ScanRequest) (*model.ScanRe
 	}
 	// parse concurrently (simple fan-out/fan-in)
 	parseSolidityASTsConcurrently(pctx)
+	// build lightweight IR and cache it; also build trivial CFG
+	for _, f := range pctx.SolidityFiles {
+		if c, ok := pctx.FileContents[f]; ok {
+			_, _ = solidity.BuildIR(f, c)
+			_, _ = analysis.BuildCFG(f, c)
+		}
+	}
 	// load Go packages and SSA
 	if len(pctx.GoFiles) > 0 {
 		if pkgs, err := goanalysis.LoadPackages(req.Path); err == nil {
@@ -65,7 +72,7 @@ func (e *Engine) Scan(ctx context.Context, req model.ScanRequest) (*model.ScanRe
 		if budget <= 0 {
 			budget = 3 * time.Second
 		}
-		ext := runExternalTools(ctx, cfg, req.Path, budget/2)
+		ext := runExternalTools(ctx, cfg, pctx, req.Path, budget/2)
 		findings = append(findings, ext...)
 	}
 	// baseline filtering if configured

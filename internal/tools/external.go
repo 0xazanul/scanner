@@ -33,8 +33,20 @@ type Finding struct {
 }
 
 func Normalize(tool string, raw []byte) ([]Finding, error) {
-	// For now, assume tools can output JSON; future: specific parsers per tool
-	var out []Finding
-	_ = json.Unmarshal(raw, &out)
-	return out, nil
+	switch tool {
+	case "solhint":
+		return normalizeSolhint(raw)
+	case "slither":
+		return normalizeSlither(raw)
+	case "gosec":
+		return normalizeGosec(raw)
+	case "govulncheck":
+		return normalizeGovulncheck(raw)
+	case "myth":
+		return normalizeMythril(raw)
+	default:
+		var out []Finding
+		_ = json.Unmarshal(raw, &out)
+		return out, nil
+	}
 }
