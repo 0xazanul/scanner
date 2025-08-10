@@ -18,6 +18,7 @@ type ProjectContext struct {
 	SolidityAST map[string]*solidity.ASTCompact
 
 	// Go analysis artifacts
-	GoPackages []*packages.Package
-	SSAProgram *ssa.Program
+	GoPackages  []*packages.Package
+	SSAProgram  *ssa.Program
+	SSAPackages []*ssa.Package
 }
