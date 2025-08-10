@@ -17,6 +17,10 @@ func (g *goFabricHeuristics) Meta() model.RuleMeta {
 }
 
 func (g *goFabricHeuristics) Analyze(ctx context.Context, req model.ScanRequest) ([]model.Finding, error) {
+	return g.AnalyzeV2(ctx, nil, req)
+}
+
+func (g *goFabricHeuristics) AnalyzeV2(ctx context.Context, pctx any, req model.ScanRequest) ([]model.Finding, error) {
 	var findings []model.Finding
 	_ = filepath.WalkDir(req.Path, func(path string, d os.DirEntry, err error) error {
 		if err != nil || d.IsDir() {

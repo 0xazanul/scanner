@@ -16,7 +16,12 @@ func (s *solidityHeuristics) Meta() model.RuleMeta {
 	return model.RuleMeta{ID: "SOL-BASE-000", Title: "Solidity heuristic checks", Severity: model.SeverityLow}
 }
 
+// Satisfy both Detector and DetectorV2 by providing both Analyze signatures
 func (s *solidityHeuristics) Analyze(ctx context.Context, req model.ScanRequest) ([]model.Finding, error) {
+	return s.AnalyzeV2(ctx, nil, req)
+}
+
+func (s *solidityHeuristics) AnalyzeV2(ctx context.Context, pctx any, req model.ScanRequest) ([]model.Finding, error) {
 	var findings []model.Finding
 	_ = filepath.WalkDir(req.Path, func(path string, d os.DirEntry, err error) error {
 		if err != nil || d.IsDir() {
