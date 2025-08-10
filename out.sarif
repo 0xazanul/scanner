@@ -1,0 +1,34 @@
+{
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "nuclei"
+        }
+      },
+      "results": [
+        {
+          "ruleId": "FAB-PRIVATE-DATA-LOG",
+          "level": "error",
+          "message": {
+            "text": "Potential leakage: printing private data"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "internal/plugins/gofabric_heuristics.go"
+                },
+                "region": {
+                  "startLine": 1,
+                  "endLine": 1
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
