@@ -11,6 +11,7 @@ import (
 	"github.com/xab-mack/smartscanner/internal/engine"
 	"github.com/xab-mack/smartscanner/internal/model"
 	"github.com/xab-mack/smartscanner/internal/report"
+	"github.com/xab-mack/smartscanner/internal/tui"
 )
 
 func AddCommands(root *cobra.Command) {
@@ -28,6 +29,7 @@ func newScanCmd() *cobra.Command {
 		outputFile string
 		sarifOut   string
 		deltaOnly  bool
+		useTUI     bool
 	)
 	cmd := &cobra.Command{
 		Use:   "scan [path]",
@@ -50,6 +52,11 @@ func newScanCmd() *cobra.Command {
 				return err
 			}
 
+			if useTUI {
+				// TUI mode ignores format flags
+				// Note: currently minimal; future: narration and tree
+				return tui.Run(result.Findings)
+			}
 			switch format {
 			case "json":
 				data, _ := json.MarshalIndent(result, "", "  ")
@@ -89,5 +96,6 @@ func newScanCmd() *cobra.Command {
 	cmd.Flags().StringVarP(&outputFile, "out", "o", "", "Write report to file (with --format json)")
 	cmd.Flags().StringVar(&sarifOut, "sarif-out", "", "Write SARIF report to file (with --format sarif)")
 	cmd.Flags().BoolVar(&deltaOnly, "delta", false, "Analyze only changed files (delta scan)")
+	cmd.Flags().BoolVar(&useTUI, "tui", false, "Render interactive TUI output")
 	return cmd
 }

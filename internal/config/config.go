@@ -25,6 +25,7 @@ type Config struct {
 	Ignore            []IgnoreRule  `json:"ignore"`
 	Plugins           []string      `json:"plugins"`
 	ExternalTools     ExternalTools `json:"externalTools"`
+	BaselinePath      string        `json:"baselinePath"`
 }
 
 func Default() Config {

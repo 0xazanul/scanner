@@ -16,8 +16,19 @@ func newRulesCmd() *cobra.Command {
 			reg := plugins.NewRegistry()
 			reg.RegisterBuiltin()
 			for _, d := range reg.Detectors() {
-				m := d.Meta()
-				fmt.Fprintf(cmd.OutOrStdout(), "%s\t%s\t%s\n", m.ID, m.Severity, m.Title)
+				var id, title string
+				var sev interface{}
+				switch det := d.(type) {
+				case plugins.Detector:
+					m := det.Meta()
+					id, title, sev = m.ID, m.Title, m.Severity
+				case plugins.DetectorV2:
+					m := det.Meta()
+					id, title, sev = m.ID, m.Title, m.Severity
+				default:
+					continue
+				}
+				fmt.Fprintf(cmd.OutOrStdout(), "%s\t%v\t%s\n", id, sev, title)
 			}
 			return nil
 		},

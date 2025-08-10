@@ -1,6 +1,8 @@
 package engine
 
 import (
+	"bufio"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -32,8 +34,44 @@ func isIgnored(f model.Finding, cfg config.Config) bool {
 		}
 		return true
 	}
+	// inline suppression
+	if hasInlineSuppression(f.File, f.RuleID, f.StartLine) {
+		return true
+	}
 	return false
 }
 
-// TODO: Inline suppression: parse source file content and look for patterns
-// like: // scanner:ignore RULE_ID reason="..."
+// hasInlineSuppression looks around the finding location for a suppression comment
+// Format: // scanner:ignore RULE_ID reason="..."
+func hasInlineSuppression(filePath, ruleID string, startLine int) bool {
+	f, err := os.Open(filePath)
+	if err != nil {
+		return false
+	}
+	defer f.Close()
+	// read lines into slice (files are small for source)
+	var lines []string
+	s := bufio.NewScanner(f)
+	for s.Scan() {
+		lines = append(lines, s.Text())
+	}
+	if len(lines) == 0 {
+		return false
+	}
+	// window: 0-based indices
+	from := startLine - 1 - 5
+	if from < 0 {
+		from = 0
+	}
+	to := startLine - 1 + 1
+	if to >= len(lines) {
+		to = len(lines) - 1
+	}
+	needle := "scanner:ignore " + ruleID
+	for i := from; i <= to; i++ {
+		if strings.Contains(lines[i], needle) {
+			return true
+		}
+	}
+	return false
+}
