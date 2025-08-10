@@ -22,14 +22,15 @@ func AddCommands(root *cobra.Command) {
 
 func newScanCmd() *cobra.Command {
 	var (
-		path       string
-		format     string
-		budgetMs   int
-		failOn     string
-		outputFile string
-		sarifOut   string
-		deltaOnly  bool
-		useTUI     bool
+		path          string
+		format        string
+		budgetMs      int
+		failOn        string
+		outputFile    string
+		sarifOut      string
+		deltaOnly     bool
+		useTUI        bool
+		writeBaseline string
 	)
 	cmd := &cobra.Command{
 		Use:   "scan [path]",
@@ -87,6 +88,9 @@ func newScanCmd() *cobra.Command {
 					}
 				}
 			}
+			if writeBaseline != "" {
+				return engine.WriteBaseline(writeBaseline, result.Findings)
+			}
 			return nil
 		},
 	}
@@ -97,5 +101,6 @@ func newScanCmd() *cobra.Command {
 	cmd.Flags().StringVar(&sarifOut, "sarif-out", "", "Write SARIF report to file (with --format sarif)")
 	cmd.Flags().BoolVar(&deltaOnly, "delta", false, "Analyze only changed files (delta scan)")
 	cmd.Flags().BoolVar(&useTUI, "tui", false, "Render interactive TUI output")
+	cmd.Flags().StringVar(&writeBaseline, "write-baseline", "", "Write a baseline file with finding fingerprints")
 	return cmd
 }

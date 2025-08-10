@@ -58,6 +58,13 @@ func (e *Engine) Scan(ctx context.Context, req model.ScanRequest) (*model.ScanRe
 		}
 	}
 	findings := e.registry.RunWithContext(ctx, pctx, req)
+	// baseline filtering if configured
+	if cfg, cfgPath, err := config.Load(req.Path); err == nil && cfg.BaselinePath != "" {
+		if b, err := loadBaseline(cfg.BaselinePath); err == nil {
+			findings = filterByBaseline(findings, b)
+			_ = cfgPath
+		}
+	}
 	// load config and apply ignores
 	cfg, _, _ := config.Load(req.Path)
 	findings = applyIgnores(findings, cfg)

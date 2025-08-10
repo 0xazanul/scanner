@@ -30,6 +30,7 @@ func (r *Registry) Register(d any) { r.detectors = append(r.detectors, d) }
 func (r *Registry) RegisterBuiltin() {
 	r.Register(&solidityHeuristics{})
 	r.Register(&goFabricHeuristics{})
+	r.Register(&solidityUncheckedCalls{})
 }
 
 func (r *Registry) Run(ctx context.Context, req model.ScanRequest) []model.Finding {
