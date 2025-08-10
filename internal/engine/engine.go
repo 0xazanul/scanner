@@ -53,11 +53,21 @@ func (e *Engine) Scan(ctx context.Context, req model.ScanRequest) (*model.ScanRe
 	if len(pctx.GoFiles) > 0 {
 		if pkgs, err := goanalysis.LoadPackages(req.Path); err == nil {
 			pctx.GoPackages = pkgs
-			prog, _ := goanalysis.BuildSSA(pkgs)
+			prog, ssaPkgs := goanalysis.BuildSSA(pkgs)
 			pctx.SSAProgram = prog
+			pctx.SSAPackages = ssaPkgs
 		}
 	}
 	findings := e.registry.RunWithContext(ctx, pctx, req)
+	// external tools within remaining budget (best-effort)
+	if cfg, _, err := config.Load(req.Path); err == nil {
+		budget := req.TimeBudget
+		if budget <= 0 {
+			budget = 3 * time.Second
+		}
+		ext := runExternalTools(ctx, cfg, req.Path, budget/2)
+		findings = append(findings, ext...)
+	}
 	// baseline filtering if configured
 	if cfg, cfgPath, err := config.Load(req.Path); err == nil && cfg.BaselinePath != "" {
 		if b, err := loadBaseline(cfg.BaselinePath); err == nil {
@@ -65,9 +75,10 @@ func (e *Engine) Scan(ctx context.Context, req model.ScanRequest) (*model.ScanRe
 			_ = cfgPath
 		}
 	}
-	// load config and apply ignores
+	// load config and apply ignores, then calibrate
 	cfg, _, _ := config.Load(req.Path)
 	findings = applyIgnores(findings, cfg)
+	findings = calibrateFindings(findings)
 	elapsed := time.Since(start)
 	return &model.ScanResult{Findings: findings, Elapsed: elapsed}, nil
 }

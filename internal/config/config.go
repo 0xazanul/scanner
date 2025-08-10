@@ -17,6 +17,8 @@ type ExternalTools struct {
 	Slither bool `json:"slither"`
 	Mythril bool `json:"mythril"`
 	Gosec   bool `json:"gosec"`
+	Solhint bool `json:"solhint"`
+	Govuln  bool `json:"govulncheck"`
 }
 
 type Config struct {
@@ -32,7 +34,7 @@ func Default() Config {
 	return Config{
 		SeverityThreshold: "medium",
 		TimeBudgetMs:      4500,
-		ExternalTools:     ExternalTools{Slither: true, Mythril: false, Gosec: true},
+		ExternalTools:     ExternalTools{Slither: true, Mythril: false, Gosec: true, Solhint: true, Govuln: true},
 	}
 }
 

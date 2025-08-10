@@ -33,6 +33,7 @@ func (r *Registry) RegisterBuiltin() {
 	r.Register(&solidityUncheckedCalls{})
 	r.Register(&solidityMissingEvents{})
 	r.Register(&solidityAccessControl{})
+	r.Register(&fabricIdentityEndorsement{})
 }
 
 func (r *Registry) Run(ctx context.Context, req model.ScanRequest) []model.Finding {
