@@ -58,6 +58,11 @@ func (r *Registry) RegisterBuiltin() {
 	r.Register(&solidityStorageGap{})
 	r.Register(&solidityUnboundedLoops{})
 	r.Register(&soliditySwapDeadline{})
+	// Go rules
+	r.Register(&goExecNoContext{})
+	r.Register(&goTLSInsecure{})
+	r.Register(&goHardcodedSecrets{})
+	r.Register(&goUncheckedErrorCritical{})
 }
 
 func (r *Registry) Run(ctx context.Context, req model.ScanRequest) []model.Finding {
