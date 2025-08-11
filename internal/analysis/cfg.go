@@ -19,6 +19,12 @@ type BasicBlock struct {
 type CFG struct {
 	File   string       `json:"file"`
 	Blocks []BasicBlock `json:"blocks"`
+	Edges  []Edge       `json:"edges"`
+}
+
+type Edge struct {
+	From int `json:"from"`
+	To   int `json:"to"`
 }
 
 // BuildCFG constructs a trivial block list by splitting on function headers and return statements
@@ -53,7 +59,12 @@ func BuildCFG(filePath, content string) (*CFG, error) {
 		current.EndLn = len(lines)
 		blocks = append(blocks, current)
 	}
-	cfg := &CFG{File: abs, Blocks: blocks}
+	// simple sequential edges linking blocks
+	var edges []Edge
+	for i := 0; i+1 < len(blocks); i++ {
+		edges = append(edges, Edge{From: blocks[i].ID, To: blocks[i+1].ID})
+	}
+	cfg := &CFG{File: abs, Blocks: blocks, Edges: edges}
 	if data, err := json.Marshal(cfg); err == nil {
 		_ = cache.Store(key, data)
 	}

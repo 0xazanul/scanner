@@ -44,6 +44,14 @@ func (r *Registry) RegisterBuiltin() {
 	r.Register(&solidityStorageLayout{})
 	r.Register(&solidityMEV{})
 	r.Register(&solidityReentrancyPath{})
+	// newly added
+	r.Register(&soliditySelfdestruct{})
+	r.Register(&solidityUninitializedStorage{})
+	r.Register(&solidityFloatingPragma{})
+	r.Register(&solidityDelegatecallUnsafe{})
+	r.Register(&solidityOwnerRisk{})
+	r.Register(&solidityNonImmutableAddresses{})
+	r.Register(&solidityMsgValueChecks{})
 }
 
 func (r *Registry) Run(ctx context.Context, req model.ScanRequest) []model.Finding {

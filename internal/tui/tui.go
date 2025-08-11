@@ -1,7 +1,9 @@
 package tui
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"sort"
 	"strings"
 
@@ -117,6 +119,17 @@ func (m modelT) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else {
 				m.narration = append(m.narration, "Grouping by file only")
 			}
+		case "w":
+			// write inline suppression above finding line
+			cur := m.currentFindings()
+			if len(cur) > 0 {
+				f := cur[m.selFinding]
+				if err := writeInlineSuppress(f.File, f.StartLine, f.RuleID); err != nil {
+					m.narration = append(m.narration, "Failed to write suppression: "+err.Error())
+				} else {
+					m.narration = append(m.narration, fmt.Sprintf("Suppression written to %s at L%d", f.File, f.StartLine))
+				}
+			}
 		}
 	}
 	return m, nil
@@ -196,6 +209,31 @@ func (m modelT) View() string {
 		}
 	}
 	return b.String()
+}
+
+func writeInlineSuppress(path string, line int, rule string) error {
+	f, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	var lines []string
+	s := bufio.NewScanner(f)
+	for s.Scan() {
+		lines = append(lines, s.Text())
+	}
+	if line < 1 {
+		line = 1
+	}
+	if line-1 > len(lines) {
+		line = len(lines)
+	}
+	sup := "// scanner:ignore " + rule + " reason=\"user suppress\""
+	idx := line - 1
+	// insert before idx
+	lines = append(lines[:idx], append([]string{sup}, lines[idx:]...)...)
+	content := strings.Join(lines, "\n")
+	return os.WriteFile(path, []byte(content), 0o644)
 }
 
 // Run launches a minimal TUI list view
