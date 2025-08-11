@@ -83,8 +83,10 @@ func (e *Engine) Scan(ctx context.Context, req model.ScanRequest) (*model.ScanRe
 			_ = cfgPath
 		}
 	}
-	// load config and apply ignores, then calibrate
+	// load config and apply filters/ignores, then calibrate
 	cfg, _, _ := config.Load(req.Path)
+	findings = filterBySeverity(findings, cfg)
+	findings = filterByPlugins(findings, cfg)
 	findings = applyIgnores(findings, cfg)
 	findings = calibrateFindings(findings)
 	elapsed := time.Since(start)

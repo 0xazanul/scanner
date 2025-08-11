@@ -63,6 +63,14 @@ func (r *Registry) RegisterBuiltin() {
 	r.Register(&goTLSInsecure{})
 	r.Register(&goHardcodedSecrets{})
 	r.Register(&goUncheckedErrorCritical{})
+	r.Register(&goSQLShellInjection{})
+	r.Register(&goCryptoRandMisuse{})
+	r.Register(&goContextPropagation{})
+	r.Register(&goGoroutineLeak{})
+	r.Register(&goAtoiNoErr{})
+	r.Register(&goWeakCipherMode{})
+	r.Register(&goJSONUnmarshalAssert{})
+	r.Register(&goPprofExposed{})
 }
 
 func (r *Registry) Run(ctx context.Context, req model.ScanRequest) []model.Finding {
