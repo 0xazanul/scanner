@@ -41,6 +41,15 @@ func (d *solidityUncheckedCalls) AnalyzeV2(ctx context.Context, pctx any, req mo
 			// heuristic: if same line contains "require(" or assigned to variables like (success, ), or checks
 			lc := strings.ToLower(line)
 			checked := strings.Contains(lc, "require(") || strings.Contains(lc, "assert(") || strings.Contains(lc, "revert(") || strings.Contains(lc, ") =") || strings.Contains(lc, "bool ")
+			if !checked {
+				for look := 1; look <= 3 && i+look < len(lines); look++ {
+					nl := strings.ToLower(lines[i+look])
+					if strings.Contains(nl, "require(") || strings.Contains(nl, "if (") || strings.Contains(nl, ") =") {
+						checked = true
+						break
+					}
+				}
+			}
 			if checked {
 				continue
 			}

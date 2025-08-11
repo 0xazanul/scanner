@@ -37,6 +37,11 @@ func (d *solidityAccessControl) AnalyzeV2(ctx context.Context, pctx any, req mod
 		headers := reHeader.FindAllStringIndex(content, -1)
 		for _, h := range headers {
 			header := content[h[0]:h[1]]
+			nameMatch := reHeader.FindStringSubmatch(header)
+			fnName := ""
+			if len(nameMatch) >= 2 {
+				fnName = nameMatch[1]
+			}
 			// modifiers check
 			hasModifier := strings.Contains(header, "onlyOwner") || strings.Contains(header, "onlyAdmin") || strings.Contains(header, "onlyRole(")
 			// function body slice (approximate): from '{' at end of header to matching '}' or next header
@@ -63,6 +68,7 @@ func (d *solidityAccessControl) AnalyzeV2(ctx context.Context, pctx any, req mod
 					Confidence:  0.6,
 					DetectorID:  "solidity-access-control",
 					File:        path,
+					Entity:      fnName,
 					StartLine:   start,
 					EndLine:     end,
 					Snippet:     util.ExtractSnippet(content, start, end, 8),
