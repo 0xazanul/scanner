@@ -39,6 +39,9 @@ func (r *Registry) RegisterBuiltin() {
 	r.Register(&solidityRandomness{})
 	r.Register(&fabricFunctionRules{})
 	r.Register(&solidityProxyUpgrade{})
+	r.Register(&solidityFallbackReceive{})
+	r.Register(&fabricSSAStrict{})
+	r.Register(&solidityStorageLayout{})
 }
 
 func (r *Registry) Run(ctx context.Context, req model.ScanRequest) []model.Finding {
