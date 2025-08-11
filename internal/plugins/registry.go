@@ -43,6 +43,7 @@ func (r *Registry) RegisterBuiltin() {
 	r.Register(&fabricSSAStrict{})
 	r.Register(&solidityStorageLayout{})
 	r.Register(&solidityMEV{})
+	r.Register(&solidityReentrancyPath{})
 }
 
 func (r *Registry) Run(ctx context.Context, req model.ScanRequest) []model.Finding {

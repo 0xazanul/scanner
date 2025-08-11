@@ -32,8 +32,8 @@ func (d *fabricSSAStrict) AnalyzeV2(ctx context.Context, pctx any, req model.Sca
 			if !ok || fn.Blocks == nil {
 				continue
 			}
-			hasPut := false
-			hasID := false
+			seenID := false
+			sawPut := false
 			leaks := false
 			for _, b := range fn.Blocks {
 				for _, ins := range b.Instrs {
@@ -42,23 +42,25 @@ func (d *fabricSSAStrict) AnalyzeV2(ctx context.Context, pctx any, req model.Sca
 						continue
 					}
 					name := lowerCallName(call.Common())
-					if strings.Contains(name, "putstate") {
-						hasPut = true
-					}
 					if strings.Contains(name, "getmspid") || strings.Contains(name, "getcreator") || strings.Contains(name, "getid(") || strings.Contains(name, "assertattributevalue") || strings.Contains(name, "hasattribute") {
-						hasID = true
+						seenID = true
 					}
 					if strings.Contains(name, "getprivatedata") && functionMentions(fn, "printf", "sprintln") {
 						leaks = true
 					}
+					if strings.Contains(name, "putstate") {
+						if !seenID {
+							sawPut = true
+						}
+					}
 				}
 			}
-			if hasPut && !hasID {
+			if sawPut {
 				pos := fset.Position(fn.Pos())
 				findings = append(findings, model.Finding{
 					RuleID:     d.Meta().ID,
 					Severity:   model.SeverityHigh,
-					Confidence: 0.7,
+					Confidence: 0.75,
 					DetectorID: "fabric-ssa-strict",
 					File:       pos.Filename,
 					StartLine:  pos.Line, EndLine: pos.Line,

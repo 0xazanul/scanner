@@ -49,11 +49,12 @@ func (e *Engine) Scan(ctx context.Context, req model.ScanRequest) (*model.ScanRe
 	}
 	// parse concurrently (simple fan-out/fan-in)
 	parseSolidityASTsConcurrently(pctx)
-	// build lightweight IR and cache it; also build trivial CFG
+	// build lightweight IR and cache it; also build trivial CFG and DFG stubs
 	for _, f := range pctx.SolidityFiles {
 		if c, ok := pctx.FileContents[f]; ok {
 			_, _ = solidity.BuildIR(f, c)
 			_, _ = analysis.BuildCFG(f, c)
+			_, _ = analysis.BuildDFG(f, c)
 		}
 	}
 	// load Go packages and SSA

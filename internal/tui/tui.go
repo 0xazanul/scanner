@@ -19,6 +19,7 @@ type modelT struct {
 	focusLeft      bool
 	severityFilter model.Severity
 	ruleFilter     string
+	groupByEntity  bool
 }
 
 func initialModel(findings []model.Finding) modelT {
@@ -30,7 +31,7 @@ func initialModel(findings []model.Finding) modelT {
 		m.files = append(m.files, file)
 	}
 	sort.Strings(m.files)
-	m.narration = append(m.narration, "Scan complete. Arrow keys navigate. Left/Right switch panes. Enter shows details. q to quit.")
+	m.narration = append(m.narration, "Scan complete. Arrow keys navigate. Left/Right switch panes. Enter details. q quit. s severity filter, r rule filter, g group by function, i inline suppress hint.")
 	return m
 }
 
@@ -109,6 +110,13 @@ func (m modelT) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				f := cur[m.selFinding]
 				m.narration = append(m.narration, fmt.Sprintf("Inspecting %s at %s:%d: %s", f.RuleID, f.File, f.StartLine, f.Message))
 			}
+		case "g":
+			m.groupByEntity = !m.groupByEntity
+			if m.groupByEntity {
+				m.narration = append(m.narration, "Grouping by entity (function)")
+			} else {
+				m.narration = append(m.narration, "Grouping by file only")
+			}
 		}
 	}
 	return m, nil
@@ -145,12 +153,38 @@ func (m modelT) View() string {
 	}
 	b.WriteString("\nDetails:\n")
 	cur := m.currentFindings()
-	for i, f := range cur {
-		prefix := "  "
-		if !m.focusLeft && i == m.selFinding {
-			prefix = "> "
+	if m.groupByEntity {
+		byEnt := map[string][]model.Finding{}
+		var ents []string
+		for _, f := range cur {
+			byEnt[f.Entity] = append(byEnt[f.Entity], f)
 		}
-		fmt.Fprintf(&b, "%s%s [%s] L%d-%d: %s (conf=%.2f)\n", prefix, f.RuleID, f.Severity, f.StartLine, f.EndLine, f.Message, f.Confidence)
+		for e := range byEnt {
+			ents = append(ents, e)
+		}
+		sort.Strings(ents)
+		for _, e := range ents {
+			name := e
+			if name == "" {
+				name = "(unknown)"
+			}
+			b.WriteString("  " + name + "\n")
+			for i, f := range byEnt[e] {
+				prefix := "    "
+				if !m.focusLeft && i == m.selFinding {
+					prefix = ">   "
+				}
+				fmt.Fprintf(&b, "%s%s [%s] L%d-%d: %s (conf=%.2f)\n", prefix, f.RuleID, f.Severity, f.StartLine, f.EndLine, f.Message, f.Confidence)
+			}
+		}
+	} else {
+		for i, f := range cur {
+			prefix := "  "
+			if !m.focusLeft && i == m.selFinding {
+				prefix = "> "
+			}
+			fmt.Fprintf(&b, "%s%s [%s] L%d-%d: %s (conf=%.2f)\n", prefix, f.RuleID, f.Severity, f.StartLine, f.EndLine, f.Message, f.Confidence)
+		}
 	}
 	if len(cur) == 0 {
 		b.WriteString("  (no findings for this file)\n")
