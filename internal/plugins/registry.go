@@ -52,6 +52,12 @@ func (r *Registry) RegisterBuiltin() {
 	r.Register(&solidityOwnerRisk{})
 	r.Register(&solidityNonImmutableAddresses{})
 	r.Register(&solidityMsgValueChecks{})
+	r.Register(&solidityTxOrigin{})
+	r.Register(&solidityTransferSend{})
+	r.Register(&solidityUncheckedERC20{})
+	r.Register(&solidityStorageGap{})
+	r.Register(&solidityUnboundedLoops{})
+	r.Register(&soliditySwapDeadline{})
 }
 
 func (r *Registry) Run(ctx context.Context, req model.ScanRequest) []model.Finding {
